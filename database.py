@@ -2,22 +2,21 @@ import mysql.connector as db
 import mysql.connector.errorcode
 
 class ConexionBD:
-
     def __init__(self, host, port, user, password, database):
-        self.mydb = db.connect(host= host, port= port, user= user, password= password)
-
+        self.mydb = db.connect(host=host, port=port, user=user, password=password)
         self.cur = self.mydb.cursor()
 
-        try: #seleccionamos la base de datos a usar
+        try:
+            # Seleccionamos la base de datos a usar
             self.cur.execute(f"USE {database}")
-        except db.Error as err: #si no lo encuentra, lo creamos
+        except db.Error as err:
             if err.errno == mysql.connector.errorcode.ER_BAD_DB_ERROR:
                 self.cur.execute(f"CREATE DATABASE {database}")
                 self.mydb.database = database
             else:
                 raise err
 
-        #creamos la tabla de usuarios
+        # Creamos la tabla de usuarios
         self.cur.execute('''CREATE TABLE IF NOT EXISTS usuarios(
             id INT AUTO_INCREMENT PRIMARY KEY,
             nombre VARCHAR(30) NOT NULL,
@@ -28,7 +27,7 @@ class ConexionBD:
         
         self.mydb.commit()
 
-        #creamos la table de autos
+        # Creamos la tabla de autos
         self.cur.execute('''CREATE TABLE IF NOT EXISTS automoviles(
             id_auto INT AUTO_INCREMENT PRIMARY KEY,
             modelo VARCHAR(30) NOT NULL,
@@ -39,7 +38,7 @@ class ConexionBD:
         
         self.mydb.commit()
 
-        #creamos la tabla de mantenimientos
+        # Creamos la tabla de mantenimientos
         self.cur.execute('''CREATE TABLE IF NOT EXISTS mantenimientos(
             id_control INT AUTO_INCREMENT PRIMARY KEY,
             control VARCHAR(100) NOT NULL,
@@ -54,34 +53,31 @@ class ConexionBD:
         self.cur.close()
         self.cur = self.mydb.cursor(dictionary=True)
 
-    #metodos CREATE
+    # Métodos CREATE
     def crear_usuario(self, nombre, apellido, email, contrasena):
         self.cur.execute("INSERT INTO usuarios(nombre, apellido, email, contrasena) VALUES (%s, %s, %s, %s)", 
             (nombre, apellido, email, contrasena))
         self.mydb.commit()
 
     def cargar_auto(self, modelo, patente, usuario):
-        self.cur.execute("INSERT INNTO automoviles(modelo, patente, usuario) VALUES (%s, %s, %s)",
+        self.cur.execute("INSERT INTO automoviles(modelo, patente, dueno) VALUES (%s, %s, %s)",
             (modelo, patente, usuario))
         self.mydb.commit()
 
     def cargar_mantenimiento(self, control, fecha, prox_control, auto):
-        self.cur.execute("INSERT INNTO mantenimientos(control, fecha, prox_control, auto) VALUES (%s, %s, %s, %s)",
+        self.cur.execute("INSERT INTO mantenimientos(control, fecha, prox_control, auto) VALUES (%s, %s, %s, %s)",
             (control, fecha, prox_control, auto))
         self.mydb.commit()
 
-    #metodos READ
+    # Métodos READ
     def consultar_usuario(self, email):
-        self.cur.execute(f'SELECT * FROM usuarios WHERE email = {email}')
-        return self.cur.fetchone
+        self.cur.execute('SELECT * FROM usuarios WHERE email = %s', (email,))
+        return self.cur.fetchone()
 
     def consultar_autos(self, usuario):
-        self.cur.execute(f'SELECT * FROM autos WHERE dueno = {usuario}')
-        return self.cur.fetchall
-    
+        self.cur.execute('SELECT * FROM automoviles WHERE dueno = %s', (usuario,))
+        return self.cur.fetchall()
+
     def consultar_controles(self, auto):
-        self.cur.execute(f'SELECT * FROM mantenimientos WHERE auto = {auto}')
-        return self.cur.fetchall
-    
-    #metodos UPDATE
-    
+        self.cur.execute('SELECT * FROM mantenimientos WHERE auto = %s', (auto,))
+        return self.cur.fetchall()

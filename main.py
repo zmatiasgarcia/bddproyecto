@@ -11,11 +11,11 @@ app = Flask(__name__, template_folder='front/html', static_folder='front/static'
  
 # instancia de la base de datos
 
-db = ConexionBD(Config.MYSQL_HOST,
+db = ConexionBD('zmatias.mysql.pythonanywhere-services.com',
                 Config.MYSQL_PORT,
-                Config.MYSQL_USER,
-                Config.MYSQL_PASSWORD,
-                Config.MYSQL_DB)
+                'zmatias',
+                'SQLmatias16%',
+                'zmatias$default')
 
 #ruta de pagina principal
 @app.route('/')
